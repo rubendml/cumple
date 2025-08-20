@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cuenta Regresiva para tu Cumpleaños</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Helvetica', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    .time-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .time-digit {
+      font-size: 80px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .separator {
+      font-size: 80px;
+      color: white;
+    }
+
+    .unit-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: cyan;
+      margin-top: -10px;
+    }
+
+    .info {
+      font-size: 20px;
+      color: yellow;
+      margin-top: 30px;
+    }
+
+    .celebration {
+      color: red !important;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="time-container">
+    <div class="unit">
+      <span id="days" class="time-digit">00</span>
+      <div class="unit-title">DÍAS</div>
+    </div>
+    <span class="separator">:</span>
+    <div class="unit">
+      <span id="hours" class="time-digit">00</span>
+      <div class="unit-title">HORAS</div>
+    </div>
+    <span class="separator">:</span>
+    <div class="unit">
+      <span id="minutes" class="time-digit">00</span>
+      <div class="unit-title">MINUTOS</div>
+    </div>
+    <span class="separator">:</span>
+    <div class="unit">
+      <span id="seconds" class="time-digit">00</span>
+      <div class="unit-title">SEGUNDOS</div>
+    </div>
+  </div>
+
+  <div id="info" class="info">Faltan para tu cumpleaños (22 de agosto de 2025)</div>
+
+  <!-- Audio para los beeps -->
+  <audio id="beep" src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" preload="auto"></audio>
+  <audio id="celebration" src="https://assets.mixkit.co/sfx/preview/mixkit-celebration-cheer-489.mp3" preload="auto"></audio>
+
+  <script>
+    // Fecha objetivo: 22 de agosto de 2025
+    const targetDate = new Date("2025-08-22T00:00:00");
+
+    const daysEl = document.getElementById("days");
+    const hoursEl = document.getElementById("hours");
+    const minutesEl = document.getElementById("minutes");
+    const secondsEl = document.getElementById("seconds");
+    const infoEl = document.getElementById("info");
+    const beepSound = document.getElementById("beep");
+    const celebrationSound = document.getElementById("celebration");
+
+    let lastMinute = -1;
+
+    function playBeep() {
+      beepSound.currentTime = 0;
+      beepSound.play().catch(e => console.log("Sonido bloqueado (navegador sin interacción)"));
+    }
+
+    function playCelebration() {
+      celebrationSound.currentTime = 0;
+      celebrationSound.play().catch(e => console.log("Sonido de celebración bloqueado"));
+    }
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        // Cumpleaños llegado
+        daysEl.textContent = "00";
+        hoursEl.textContent = "00";
+        minutesEl.textContent = "00";
+        secondsEl.textContent = "00";
+        daysEl.className = "time-digit celebration";
+        hoursEl.className = "time-digit celebration";
+        minutesEl.className = "time-digit celebration";
+        secondsEl.className = "time-digit celebration";
+        infoEl.textContent = "¡Feliz Cumpleaños! 🎉";
+
+        // Reproducir sonido de celebración (solo una vez)
+        if (!playedCelebration) {
+          playCelebration();
+          playedCelebration = true;
+        }
+
+        setTimeout(updateCountdown, 5000);
+        return;
+      }
+
+      // Reiniciar celebración si volvemos a estar en cuenta regresiva
+      playedCelebration = false;
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / (24 * 3600));
+      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      daysEl.textContent = String(days).padStart(2, '0');
+      hoursEl.textContent = String(hours).padStart(2, '0');
+      minutesEl.textContent = String(minutes).padStart(2, '0');
+      secondsEl.textContent = String(seconds).padStart(2, '0');
+
+      // Beep cada minuto nuevo
+      const currentMinute = now.getMinutes();
+      if (currentMinute !== lastMinute) {
+        lastMinute = currentMinute;
+        playBeep();
+      }
+
+      // Actualizar info
+      infoEl.textContent = `Faltan para tu cumpleaños (22 de agosto de 2025)`;
+
+      // Actualizar cada segundo
+      setTimeout(updateCountdown, 1000);
+    }
+
+    let playedCelebration = false;
+    updateCountdown();
+  </script>
+</body>
+</html>
